@@ -144,13 +144,15 @@ static char lat[BUFFER_SZ];
 static char lon[BUFFER_SZ];
 
 // MTK33x9 chipset
+#define PMTK_SET_BAUD_9600 "$PMTK251,9600*17"
+#define PMTK_SET_BAUD_57600 "$PMTK251,57600*2C"
 #define PMTK_SET_NMEA_UPDATE_1HZ "$PMTK220,1000*1F"
 #define PMTK_SET_NMEA_OUTPUT_ALLDATA "$PMTK314,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0*28"
 #define PMTK_SET_NMEA_OUTPUT_RMCGGA "$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28"
 #define PMTK_HOT_START "$PMTK101*32"
 #define PMTK_COLD_START "$PMTK104*37"
-#define SBAS_ENABLE "$PMTK313,1*2E\r\n"
-#define DGPS_WAAS_ON "$PMTK301,2*2E\r\n"
+#define SBAS_ENABLE "$PMTK313,1*2E"
+#define DGPS_WAAS_ON "$PMTK301,2*2E"
 
 #if ENABLE_STATIC_GPS
 #include <avr/pgmspace.h>
@@ -319,11 +321,11 @@ void setup()
 #if ENABLE_SOFTGPS
   gpsSerial.begin(9600);
 
-  // Put GPS serial in listen mode
-  gpsSerial.listen();
-
   // initialize and program the GPS module
   gps_program_settings();
+
+  // Put GPS serial in listen mode
+  gpsSerial.listen();
 #endif
 
 
@@ -1176,6 +1178,10 @@ display.fillRect(118, offset+2, battery, 3, WHITE);
 void gps_program_settings()
 {
 #if ENABLE_MEDIATEK
+  memset(line, 0, LINE_SZ);
+  sprintf_P(line, PSTR(PMTK_SET_BAUD_9600));
+  gpsSerial.println(line);
+
   memset(line, 0, LINE_SZ);
   sprintf_P(line, PSTR(PMTK_SET_NMEA_OUTPUT_RMCGGA));
   gpsSerial.println(line);
